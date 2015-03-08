@@ -56,9 +56,14 @@ int main(){
 	DDRC |= (1<<DDC1);
 
 	enableUART();
+	enableUARTRX();
+	enableUARTTX();
 
 	// Enable interrupts
 	sei();
+
+	// Send a little string
+	UARTtransmitString("hi");
 
 	PORTC &= ~(1<<offPin);
 	// 'Heartbeat'
@@ -81,6 +86,8 @@ int main(){
 		for(i=0; i<10; i++){
 			_delay_ms(10);
 		}
+		UARTtransmitString("wibble\n");
+		UARTtransmitString("hi\n");
 	}
 
 	return 0;
