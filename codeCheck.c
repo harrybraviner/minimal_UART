@@ -15,14 +15,23 @@ light an LED for one second.
 #include "myUART.c"
 #include <util/delay.h>
 
+unsigned char beatPin = 0;	// Which pin do we flash?
+unsigned char offPin = 1;	// Set this one to off
+
 ISR(USART_RX_vect)
 {
 	// Hold LED on for 2 seconds
 	int i;
 	char recvByte = UDR0;
-	PORTC |= (1<<PORTC0);
+	PORTC |= (1<<beatPin);
 	for(i=0; i<200; i++){
 		_delay_ms(10);
+	}
+	// If we've been told to 'switch', do so
+	if (recvByte == 's'){
+		beatPin = 1 - beatPin;
+		offPin = 1 - offPin;
+		PORTC &= ~(1<<offPin);
 	}
 }
 
@@ -37,25 +46,24 @@ int main(){
 	// Enable interrupts
 	sei();
 
-	PORTC &= ~(1<<PORTC1);
+	PORTC &= ~(1<<offPin);
 	// 'Heartbeat'
 	for(;;){
 		int i;
-		if(!(UCSR0A & (1<<RXC0))){
-			PORTC &= ~(1<<PORTC0);
-		}
+		PORTC &= ~(1<<offPin);	// Just make sure it's off
+		PORTC &= ~(1<<beatPin);
 		for(i=0; i<60; i++){
 			_delay_ms(10);
 		}
-		PORTC |= (1<<PORTC0);
+		PORTC |= (1<<beatPin);
 		for(i=0; i<10; i++){
 			_delay_ms(10);
 		}
-		PORTC &= ~(1<<PORTC0);
+		PORTC &= ~(1<<beatPin);
 		for(i=0; i<10; i++){
 			_delay_ms(10);
 		}
-		PORTC |= (1<<PORTC0);
+		PORTC |= (1<<beatPin);
 		for(i=0; i<10; i++){
 			_delay_ms(10);
 		}
