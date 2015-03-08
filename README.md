@@ -5,8 +5,8 @@ Minimal UART for the ATmega328p
 
 The code in this repository should enable the USART0 module of an atmega328p chip in receive mode.
 Most of the time the main loop performs a 'heartbeat' on a LED connected to PC0.
-If the sequence `abcd` is send over serial, it will switch from doing the heartbeat on PC0 to PC1.
-If it receives that sequence again, it will switch back.
+If the sequence `abcd` is send over serial, followed by a newline or carriage-return, it will
+switch from doing the heartbeat on PC0 to PC1. If it receives that sequence again, it will switch back.
 
 ## Talking to the 328 over UART
 

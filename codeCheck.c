@@ -10,6 +10,7 @@ light an LED for one second.
 
 #define F_CPU 16000000
 
+#include <string.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "myUART.c"
@@ -18,27 +19,33 @@ light an LED for one second.
 unsigned char beatPin = 0;	// Which pin do we flash?
 unsigned char offPin = 1;	// Set this one to off
 
-char *codeWord = "abcd";	// The codeword we must type to change the LED
-int codeLength = 4;
-int codeChar = 0;					// Which character are we currently looking for?
+#define RX_BUFFER_LENGTH	100
+
+char RXBuffer[RX_BUFFER_LENGTH+1];		// Input buffer (extra character for '\0')
+uint8_t	RXi = 0;			// Counter for the position into which the next
+											// character will be read into RXBuffer
 
 ISR(USART_RX_vect)
 {
 	char recvByte = UDR0;
 
-	// Is the letter consistent with the code?
-	if (recvByte == codeWord[codeChar]){
-		codeChar++;
+	if (recvByte == '\n' || recvByte == '\r'){
+		RXBuffer[RXi] = '\0';
+		RXi = 0;
+		if(!strcmp(RXBuffer, "abcd")){
+			beatPin = 1 - beatPin;
+			offPin 	= 1 - offPin;
+			PORTC &= ~(1<<offPin);
+		}
 	} else {
-		codeChar = 0;
-	}
-
-	// If we've now received the complete code, switch LEDs
-	if (codeChar == codeLength){
-		codeChar = 0;
-		beatPin = 1 - beatPin;
-		offPin = 1 - offPin;
-		PORTC &= ~(1<<offPin);
+		if (RXi >= RX_BUFFER_LENGTH) {
+			// Buffer overrun!
+			RXi = 0;
+		} else {
+			// Write character into buffer
+			RXBuffer[RXi] = recvByte;
+			RXi++;
+		}
 	}
 }
 
