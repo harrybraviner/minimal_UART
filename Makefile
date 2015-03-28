@@ -25,3 +25,6 @@ fuses :
 	$(OBJ2HEX) -R .eeprom -O ihex $< $@
 clean :
 	rm -f *.hex *.obj *.o
+
+sendCode: sendCode.c
+	gcc sendCode.c -Wall -o sendCode
